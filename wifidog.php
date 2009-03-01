@@ -118,7 +118,7 @@ function wifidog_set_cookie() {
 	$cookie = wifidog_get_cookie_value();
 	$expire = time() + (60 * 60 * 24 * 365); // one year
 
-	setcookie('wifidog_auth', $cookie, $expire, PLUGINS_COOKIE_PATH, COOKIE_DOMAIN);
+	setcookie('wifidog_auth', $cookie, $expire, '/', COOKIE_DOMAIN);
 }
 
 function wifidog_get_cookie_value() {
@@ -188,6 +188,8 @@ class Wifidog {
 		if ( wifidog_validate_cookie() || ($_REQUEST['wifidog_password'] == get_option('wifidog_password')) ) {
 
 			wifidog_set_cookie();
+			session_start();
+			$_SESSION['wifidog_url'] = $url;
 
 			$token = self::new_token();
 			$redirect_url = 'http://' . $address . ':' . $port . '/wifidog/auth?token=' . $token;
