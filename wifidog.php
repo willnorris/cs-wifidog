@@ -185,26 +185,73 @@ class Wifidog {
 	 * @param string $url
 	 */
 	public function login($gateway, $address, $port, $url) {
-		if ( wifidog_validate_cookie() || ($_REQUEST['wifidog_password'] == get_option('wifidog_password')) ) {
-
-			wifidog_set_cookie();
-			session_start();
-			$_SESSION['wifidog_url'] = $url;
-
-			$token = self::new_token();
-			$redirect_url = 'http://' . $address . ':' . $port . '/wifidog/auth?token=' . $token;
-
-			do_action('wifidog_login', $gateway);
-			wp_redirect($redirect_url);
-
+		if ( wifidog_validate_cookie() ) { //|| ($_REQUEST['wifidog_password'] == get_option('wifidog_password')) ) {
+			self::complete_login($gateway, $address, $port, $url);
+		} else if ( $_REQUEST['wifidog_password'] == get_option('wifidog_password') && $_REQUEST['agree'] ) {
+			self::complete_login($gateway, $address, $port, $url);
 		} else {
-?>
-			<form method="post">
-				Password: <input type="text" name="wifidog_password" />
-				<input type="submit" value="submit" />
-			</form>
-<?php
+			self::login_form();
 		}
+	}
+
+
+	public function login_form() {
+		global $wp_locale;
+?>
+		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+		<html xmlns="http://www.w3.org/1999/xhtml" <?php if ( function_exists( 'language_attributes' ) ) language_attributes(); ?>>
+		<head>
+			<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+			<title>Welcome to Citizen Space</title>
+		<?php
+			wp_admin_css('install', true);
+			if ( ($wp_locale) && ('rtl' == $wp_locale->text_direction) ) {
+				wp_admin_css('login-rtl', true);
+			}
+
+			do_action('admin_head');
+		?>
+			<style type="text/css">
+				p { margin: 1.5em auto; }
+				h1 { background: url('<?php echo plugins_url("wifidog/chandelier-sm.png"); ?>') top left no-repeat; line-height: 45px; padding-left: 45px; }
+			</style>
+		</head>
+
+		<body id="wifidog-page">
+			<h1>Welcome to Citizen Space</h1>
+			<form method="post">
+				<p>
+					<label for="agree"><input type="checkbox" name="agree" id="agree" />
+						I agree to the <a href="http://citizenspace.us/policy/terms/" target="_blank">Citizen Space Terms of Service</a>.
+					</label>
+				</p>
+
+				<p>
+					Wifi Password: <input type="text" name="wifidog_password" /><br />
+					<em>It should be written on the large whiteboard near the drop-in desks.</em>
+				</p>
+
+				<div class="submit"><input type="submit" value="Submit" /></div>
+
+				<p style="font-size: 0.6em">If you are prompted to login at this page more than once a week, please notify <a href="http://willnorris.com/">Will Norris</a> so it can be fixed.</p>
+			</form>
+		</body>
+		</html>
+<?php
+		die();
+	}
+
+	protected function complete_login($gateway, $address, $port, $url) {
+		wifidog_set_cookie();
+
+		session_start();
+		$_SESSION['wifidog_url'] = $url;
+
+		$token = self::new_token();
+		$redirect_url = 'http://' . $address . ':' . $port . '/wifidog/auth?token=' . $token;
+
+		do_action('wifidog_login', $gateway);
+		wp_redirect($redirect_url);
 
 		exit;
 	}
