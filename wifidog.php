@@ -114,6 +114,23 @@ function wifidog_parse_request($wp) {
 }
 
 
+function wifidog_set_cookie() {
+	$cookie = wifidog_get_cookie_value();
+	$expire = time() + (60 * 60 * 24 * 365); // one year
+
+	setcookie('wifidog_auth', $cookie, $expire, PLUGINS_COOKIE_PATH, COOKIE_DOMAIN);
+}
+
+function wifidog_get_cookie_value() {
+	return sha1( wp_salt() . get_option('wifidog_password') );
+}
+
+
+function wifidog_validate_cookie() {
+	return ($_COOKIE['wifidog_auth'] == wifidog_get_cookie_value());
+}
+
+
 /**
  * Implementation of the Wifidog protocol (v1).  
  *
@@ -168,22 +185,25 @@ class Wifidog {
 	 * @param string $url
 	 */
 	public function login($gateway, $address, $port, $url) {
-		session_start();
-		$_SESSION['wifidog_url'] = $url;
+		if ( wifidog_validate_cookie() || ($_REQUEST['wifidog_password'] == get_option('wifidog_password')) ) {
 
-		if (!is_user_logged_in()) {
-			$_SESSION['wifidog_login'] = true;
-			$_SESSION['wifidog_address'] = $address;
-			$_SESSION['wifidog_port'] = $port;
+			wifidog_set_cookie();
 
-			auth_redirect();
+			$token = self::new_token();
+			$redirect_url = 'http://' . $address . ':' . $port . '/wifidog/auth?token=' . $token;
+
+			do_action('wifidog_login', $gateway);
+			wp_redirect($redirect_url);
+
+		} else {
+?>
+			<form method="post">
+				Password: <input type="text" name="wifidog_password" />
+				<input type="submit" value="submit" />
+			</form>
+<?php
 		}
 
-		$token = self::new_token();
-		$redirect_url = 'http://' . $address . ':' . $port . '/wifidog/auth?token=' . $token;
-
-		do_action('wifidog_login', $gateway);
-		wp_redirect($redirect_url);
 		exit;
 	}
 
