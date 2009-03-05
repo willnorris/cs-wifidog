@@ -56,7 +56,7 @@ function wifidog_query_vars($vars) {
  * Add wifidog rewrite rules.
  *
  * @param WP_Rewrite $wp_rewrite
- * @return WP_Rewrite 
+ * @return WP_Rewrite
  */
 function wifidog_rewrite_rules($wp_rewrite) {
 	$site_url = get_option('siteurl');
@@ -132,9 +132,9 @@ function wifidog_validate_cookie() {
 
 
 /**
- * Implementation of the Wifidog protocol (v1).  
+ * Implementation of the Wifidog protocol (v1).
  *
- * There is still a lot of WordPress specific code in here, so it's not 
+ * There is still a lot of WordPress specific code in here, so it's not
  * directly reusable in other platforms without a little work.
  *
  * @see http://dev.wifidog.org/wiki/doc/developer/WiFiDogProtocol_V1
@@ -203,6 +203,10 @@ class Wifidog {
 		<head>
 			<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 			<title>Welcome to Citizen Space</title>
+
+			<meta name = "viewport" content = "user-scalable=no, width = device-width">
+			<meta name = "viewport" content = "initial-scale = 1.0">
+
 		<?php
 			wp_admin_css('install', true);
 			if ( ($wp_locale) && ('rtl' == $wp_locale->text_direction) ) {
@@ -213,7 +217,36 @@ class Wifidog {
 		?>
 			<style type="text/css">
 				p { margin: 1.5em auto; }
-				h1 { background: url('<?php echo plugins_url("wifidog/chandelier-sm.png"); ?>') top left no-repeat; line-height: 45px; padding-left: 45px; }
+				h1 {
+					background: url(<?php echo plugins_url("wifidog/chandelier-sm.png"); ?>) top left no-repeat;
+					line-height: 45px;
+					padding-left: 45px;
+				}
+				@media screen and (max-device-width: 480px) {
+					body {
+						width: auto;
+						margin: 0.5em;
+						padding: 0.5em;
+					}
+					h1 {
+						font-size: 20px;
+					}
+					#agree {
+						width: 20px;
+						height: 20px;
+						float: left;
+						margin-right: 1.5em;
+					}
+					#wifidog_password {
+						font-size: 1.5em;
+						width: 90%;
+					}
+					p {
+						margin-top: 0.8em;
+						margin-bottom: 0.8em;
+					}
+				}
+
 			</style>
 		</head>
 
@@ -221,13 +254,14 @@ class Wifidog {
 			<h1>Welcome to Citizen Space</h1>
 			<form method="post">
 				<p>
-					<label for="agree"><input type="checkbox" name="agree" id="agree" />
+					<input type="checkbox" name="agree" id="agree" />
+					<label for="agree">
 						I agree to the <a href="http://citizenspace.us/policy/terms/" target="_blank">Citizen Space Terms of Service</a>.
 					</label>
 				</p>
 
 				<p>
-					Wifi Password: <input type="text" name="wifidog_password" /><br />
+					Wifi Password: <input type="text" name="wifidog_password" id="wifidog_password" /><br />
 					<em>It should be written on the large whiteboard near the drop-in desks.</em>
 				</p>
 
