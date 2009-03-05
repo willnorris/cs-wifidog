@@ -185,17 +185,25 @@ class Wifidog {
 	 * @param string $url
 	 */
 	public function login($gateway, $address, $port, $url) {
-		if ( wifidog_validate_cookie() ) { //|| ($_REQUEST['wifidog_password'] == get_option('wifidog_password')) ) {
+		$error = null;
+
+		if ( wifidog_validate_cookie() ) {
 			self::complete_login($gateway, $address, $port, $url);
-		} else if ( $_REQUEST['wifidog_password'] == get_option('wifidog_password') && $_REQUEST['agree'] ) {
-			self::complete_login($gateway, $address, $port, $url);
-		} else {
-			self::login_form();
+		} else if ($_REQUEST['submit']) {
+			if ( strcasecmp($_REQUEST['wifidog_password'], get_option('wifidog_password')) != 0 ) {
+				$error = 'Incorrect Wifi Password.';
+			} else if ( !$_REQUEST['agree'] ) {
+				$error = 'You must agree to the Terms of Service.';
+			} else {
+				self::complete_login($gateway, $address, $port, $url);
+			}
 		}
+
+		self::login_form($error);
 	}
 
 
-	public function login_form() {
+	public function login_form($error = null) {
 		global $wp_locale;
 ?>
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -217,6 +225,14 @@ class Wifidog {
 		?>
 			<style type="text/css">
 				p { margin: 1.5em auto; }
+				.error {
+					border: 1px solid #E6DB55;
+					background: #FFFBCC;
+					padding: 0.2em 0.5em;
+					margin: 0.5em;
+					-webkit-border-radius: 3px 3px;
+					-moz-border-radius: 3px 3px;
+				}
 				h1 {
 					background: url(<?php echo plugins_url("wifidog/chandelier-sm.png"); ?>) top left no-repeat;
 					line-height: 45px;
@@ -225,7 +241,7 @@ class Wifidog {
 				@media screen and (max-device-width: 480px) {
 					body {
 						width: auto;
-						margin: 0.5em;
+						margin: 1em 0.5em 3em;
 						padding: 0.5em;
 					}
 					h1 {
@@ -242,8 +258,6 @@ class Wifidog {
 						width: 90%;
 					}
 					p {
-						margin-top: 0.8em;
-						margin-bottom: 0.8em;
 					}
 				}
 
@@ -252,6 +266,7 @@ class Wifidog {
 
 		<body id="wifidog-page">
 			<h1>Welcome to Citizen Space</h1>
+			<?php echo ($error ? '<p class="error">' . $error . '</p>' : ''); ?>
 			<form method="post">
 				<p>
 					<input type="checkbox" name="agree" id="agree" />
@@ -261,11 +276,11 @@ class Wifidog {
 				</p>
 
 				<p>
-					Wifi Password: <input type="text" name="wifidog_password" id="wifidog_password" /><br />
+				Wifi Password: <input type="text" name="wifidog_password" id="wifidog_password" value="<?php echo $_REQUEST['wifidog_password']; ?>" /><br />
 					<em>It should be written on the large whiteboard near the drop-in desks.</em>
 				</p>
 
-				<div class="submit"><input type="submit" value="Submit" /></div>
+				<div class="submit"><input type="submit" name="submit" value="Submit" /></div>
 
 				<p style="font-size: 0.6em">If you are prompted to login at this page more than once a week, please notify <a href="http://willnorris.com/">Will Norris</a> so it can be fixed.</p>
 			</form>
