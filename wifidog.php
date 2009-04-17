@@ -380,11 +380,21 @@ class Wifidog {
 		$user = wp_get_current_user();
 
 		$tokens = get_option('wifidog_tokens');
+
+		// remove expired tokens
+		$token_lifetime = 60 * 60 * 48; // 48 hours
+		foreach ($tokens as $id => $fields) {
+			if ( ($fields['created'] + $token_lifetime) < time() ) {
+				unset($tokens[$id]);
+			}
+		}
+
 		$tokens[$t] = array(
 			'user' => $user->ID,
 			'created' => time(),
 			'temp' => $temp,
 		);
+
 		update_option('wifidog_tokens', $tokens);
 
 		return $t;
