@@ -6,6 +6,8 @@
  Author: Will Norris
  Author URI: http://willnorris.com/
  Version: trunk
+License: Apache 2.0
+License URI: https://www.apache.org/licenses/LICENSE-2.0
  */
 
 include_once(dirname(__FILE__) . '/admin_panels.php');
